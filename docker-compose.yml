@@ -1,0 +1,49 @@
+services:
+  db:
+    image: mysql:8
+    container_name: student_db
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: student_performance
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  api:
+    build:
+      context: ./app
+    container_name: student_api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_NAME: student_performance
+      DB_USER: root
+      DB_PASSWORD: ""
+    volumes:
+      - ./app:/code/app
+
+  web_app:
+    build:
+      context: ./web_app
+    container_name: web_app
+    ports:
+      - "8080:8000"
+    depends_on:
+      - db
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: student_performance
+      DB_USERNAME: root
+      DB_PASSWORD: ""
+    volumes:
+      - ./web_app:/code/app
+    restart: unless-stopped
+
+volumes:
+  db_data:
